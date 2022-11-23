@@ -15,9 +15,6 @@ from modules.correlation.correlation import correlation, get_correlation_table
 from modules.pair_strategy.pair_strategy import pair_strategy
 from modules.visualization.result_graph.result_graph import get_result_graph
 
-from streamlit_modal import Modal
-import streamlit.components.v1 as components
-
 st.markdown('## Upload Your Files')
 
 df_comm = []
