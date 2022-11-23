@@ -36,9 +36,11 @@ st.markdown('### Correlation Heatmap')
 heatmap(concat_df=concat_df)
 
 time_period = int(st.number_input('Enter Time Period:',value=14.0))
-threshold = st.number_input('Enter Time Period:',value=0.7)
-stop_loss = int(st.number_input('Enter Time Period:',value=1.0))
-target = int(st.number_input('Enter Time Period:',value=4.0))
+threshold = st.number_input('Enter Threshold:',value=0.7)
+stop_loss = int(st.number_input('Enter Stop Loss:',value=1.0))
+target = int(st.number_input('Enter Target:',value=4.0))
+low_rsi = st.number_input('Enter Low RSI', value=0.2)
+high_rsi = st.number_input('Enter High RSI', value=0.8)
 
 def get_master_dataframe(time_period):
     master = concat_df.columns
@@ -79,8 +81,6 @@ for i in range(df.shape[0]):
     instru1 = get_instrument_data(id1)
     instru2 = get_instrument_data(id2)
     logs_report = ""
-    stoploss = 1
-    target = 4
     logs = False
     edgecase = True
     pnl = []
