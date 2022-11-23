@@ -10,7 +10,9 @@ from modules.correlation.correlation import correlation, get_correlation_table
 from modules.pair_strategy.pair_strategy import pair_strategy
 from modules.visualization.result_graph.result_graph import get_result_graph
 
-st.markdown('## Upload Your Files')
+st.title("BANKING GEEKS")
+
+st.subheader('Upload Your Files')
 
 df_comm = []
 df_stock = []
@@ -19,12 +21,14 @@ uploaded_file = st.file_uploader("Upload Commodities File" , type=['csv','xlsx']
 if uploaded_file:
     df_comm = pd.read_csv(uploaded_file)
 
+st.subheader('Commodities Table')   
 st.write(df_comm)
 
 uploaded_file = st.file_uploader("Upload Stocks File" , type=['csv','xlsx'])
 if uploaded_file:
     df_stock = pd.read_csv(uploaded_file)
 
+st.subheader('Stocks Table')   
 st.write(df_stock)
 
 #Changing the format of the date
@@ -48,12 +52,12 @@ concat_df_t = concat_df.transpose()
 concat_df_t.fillna(concat_df_t.interpolate(), axis=0, inplace=True)
 concat_df = concat_df_t.transpose()
 
-st.markdown('## Stocks and Commodities Data')
+st.subheader('Stocks and Commodities Data')
 st.write(concat_df)
 
 correlation_df = get_correlation_table(df_comm=df_comm,df_stock=df_stock)
 
-st.markdown('## Correlation Table')
+st.subheader('Correlation Table')
 st.write(correlation_df)
 
 time_period = int(st.number_input('Enter Time Period:',value=14.0))
@@ -67,20 +71,21 @@ no_of_pairs = st.number_input('Enter Number of Top Pairs:', value=10)
 if st.button("Update Config")==False:
     st.stop()
 
-st.markdown('## Data Exploration')
+st.header('Data Exploration')
 
-st.markdown('### Stock Trends')
+st.subheader('Stock Trends')
 trend_chart_stock(df_stock=df_stock)
 
-st.markdown('### Commodities Trends')
+st.subheader('Commodities Trends')
 trend_chart_comm(df_comm=df_comm)
 
-st.markdown('### Correlation Heatmap')
+st.subheader('Correlation Heatmap')
 heatmap(concat_df=concat_df)
 
 
 
 def get_master_dataframe(time_period):
+    st.spinner("Loading Master Dataframe..")
     master = concat_df.columns
     master = pd.DataFrame(master).set_index("DATE")
     for i in range(concat_df.shape[0]):
@@ -91,6 +96,7 @@ def get_master_dataframe(time_period):
     return master
 
 master_df = get_master_dataframe(time_period=time_period)
+
 
 def get_instrument_data(id):
     instrument = concat_df.iloc[id]
@@ -151,8 +157,9 @@ def display_report(id1, id2 , stoploss, target , logs, edgecase):
         st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="PnL_Report.pdf")    
         st.stop()  
            
-
-st.markdown('### Pair Strategy Ranking')
+st.markdown("")
+st.header('Pair Strategy Ranking')
+st.markdown("")
 
 logs = True
 edgecase = True
