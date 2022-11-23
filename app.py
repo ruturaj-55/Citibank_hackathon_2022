@@ -110,7 +110,8 @@ def display_report(id1, id2 , stoploss, target , logs, edgecase):
         pdf.set_font("Arial", size = 8)
         for ind,text in enumerate(logs_report):
             pdf.multi_cell(200, 10, txt = text , align = 'L')
-        st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="Strategy_Report.pdf")      
+
+        st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="PnL_Report.pdf")      
            
 
 st.markdown('### Pair Strategy Ranking')
