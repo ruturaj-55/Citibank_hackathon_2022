@@ -1,11 +1,6 @@
 import streamlit as st 
-import matplotlib.pyplot as plt 
 import pandas as pd 
-import numpy as np
-import seaborn as sns
-import datetime
 from fpdf import FPDF
-import base64
 
 from modules.visualization.data_trends.trend_chart import trend_chart_comm,trend_chart_stock
 from modules.visualization.corr_heatmap.corr_heatmap import heatmap
