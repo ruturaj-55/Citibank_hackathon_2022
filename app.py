@@ -11,7 +11,7 @@ from modules.visualization.data_trends.trend_chart import trend_chart_comm,trend
 from modules.visualization.corr_heatmap.corr_heatmap import heatmap
 from modules.moving_avg.mov_avgs import get_exp_moving_avg,get_simple_moving_avg
 from modules.stoch_rsi.stoch_rsi import getStochRSI
-from modules.correlation.corr import correlation,get_correlation_table
+from modules.correlation.correlation import correlation, get_correlation_table
 from modules.pair_strategy.pair_strategy import pair_strategy
 from modules.visualization.result_graph.result_graph import get_result_graph
 
