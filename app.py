@@ -19,6 +19,17 @@ from modules.visualization.result_graph.result_graph import get_result_graph
 from streamlit_modal import Modal
 import streamlit.components.v1 as components
 
+st.markdown('## Upload Your Files')
+
+uploaded_files = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
+
+time_period = int(st.number_input('Enter Time Period:',value=14.0))
+threshold = st.number_input('Enter Threshold:',value=0.7)
+stop_loss = int(st.number_input('Enter Stop Loss:',value=1.0))
+target = int(st.number_input('Enter Target:',value=4.0))
+low_rsi = st.number_input('Enter Low RSI', value=0.2)
+high_rsi = st.number_input('Enter High RSI', value=0.8)
+
 st.markdown('## Data Extraction')
 st.markdown('### Stock Data')
 st.write(concat_df)
@@ -35,12 +46,7 @@ trend_chart_comm(df_comm=df_comm)
 st.markdown('### Correlation Heatmap')
 heatmap(concat_df=concat_df)
 
-time_period = int(st.number_input('Enter Time Period:',value=14.0))
-threshold = st.number_input('Enter Threshold:',value=0.7)
-stop_loss = int(st.number_input('Enter Stop Loss:',value=1.0))
-target = int(st.number_input('Enter Target:',value=4.0))
-low_rsi = st.number_input('Enter Low RSI', value=0.2)
-high_rsi = st.number_input('Enter High RSI', value=0.8)
+
 
 def get_master_dataframe(time_period):
     master = concat_df.columns
@@ -84,7 +90,7 @@ for i in range(df.shape[0]):
     logs = False
     edgecase = True
     pnl = []
-    pnl,logs_report = pair_strategy(instru1, instru2, stoploss/100, target/100, logs, edgecase)
+    pnl,logs_report = pair_strategy(instru1, instru2, stop_loss/100, target/100, logs, edgecase)
     data = calculate_pnl_report(instru1, instru2, pnl, id1, id2)  
     pnl_report.append(data)
 
@@ -111,7 +117,8 @@ def display_report(id1, id2 , stoploss, target , logs, edgecase):
         for ind,text in enumerate(logs_report):
             pdf.multi_cell(200, 10, txt = text , align = 'L')
 
-        st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="PnL_Report.pdf")      
+        st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="PnL_Report.pdf")    
+        st.stop()  
            
 
 st.markdown('### Pair Strategy Ranking')
