@@ -7,12 +7,11 @@ import datetime
 from fpdf import FPDF
 import base64
 
-from modules.data_ingestion.data_ingest import concat_df,df_comm,df_stock
 from modules.visualization.data_trends.trend_chart import trend_chart_comm,trend_chart_stock
 from modules.visualization.corr_heatmap.corr_heatmap import heatmap
 from modules.moving_avg.mov_avgs import get_exp_moving_avg,get_simple_moving_avg
 from modules.stoch_rsi.stoch_rsi import getStochRSI
-from modules.correlation.corr import correlation
+from modules.correlation.corr import correlation,get_correlation_table
 from modules.pair_strategy.pair_strategy import pair_strategy
 from modules.visualization.result_graph.result_graph import get_result_graph
 
@@ -21,7 +20,49 @@ import streamlit.components.v1 as components
 
 st.markdown('## Upload Your Files')
 
-uploaded_files = st.file_uploader("Choose a CSV file", accept_multiple_files=True)
+df_comm = []
+df_stock = []
+
+uploaded_file = st.file_uploader("Upload Commodities File" , type=['csv','xlsx'])
+if uploaded_file:
+    df_comm = pd.read_csv(uploaded_file)
+
+st.write(df_comm)
+
+uploaded_file = st.file_uploader("Upload Stocks File" , type=['csv','xlsx'])
+if uploaded_file:
+    df_stock = pd.read_csv(uploaded_file)
+
+st.write(df_stock)
+
+#Changing the format of the date
+df_comm['DATE'] = pd.to_datetime(df_comm['DATE'], format='%d-%b-%y')
+df_stock['DATE'] = pd.to_datetime(df_stock['DATE'], format='%d-%b-%y')
+
+#Transforming the data into required format
+df_comm=df_comm.pivot(index='Symbol', columns='DATE', values='CLOSE')
+df_stock=df_stock.pivot(index='Symbol', columns='DATE', values='CLOSE')
+
+#Removing the Holidays from the Commodity CSV
+df_comm.columns.difference(df_stock.columns).tolist()
+df_comm=df_comm.drop(df_comm.columns.difference(df_stock.columns).tolist(),axis=1)
+
+#Combining both the datasets
+concat_frames = [df_comm, df_stock]
+concat_df = pd.concat(concat_frames)
+
+#Filling any possible null values
+concat_df_t = concat_df.transpose()
+concat_df_t.fillna(concat_df_t.interpolate(), axis=0, inplace=True)
+concat_df = concat_df_t.transpose()
+
+st.markdown('## Stocks and Commodities Data')
+st.write(concat_df)
+
+correlation_df = get_correlation_table(df_comm=df_comm,df_stock=df_stock)
+
+st.markdown('## Correlation Table')
+st.write(correlation_df)
 
 time_period = int(st.number_input('Enter Time Period:',value=14.0))
 threshold = st.number_input('Enter Threshold:',value=0.7)
@@ -29,14 +70,10 @@ stop_loss = int(st.number_input('Enter Stop Loss:',value=1.0))
 target = int(st.number_input('Enter Target:',value=4.0))
 low_rsi = st.number_input('Enter Low RSI', value=0.2)
 high_rsi = st.number_input('Enter High RSI', value=0.8)
+no_of_pairs = st.number_input('Enter Number of Top Pairs:', value=10)
 
-
-
-
-st.markdown('## Data Extraction')
-st.markdown('### Stock Data')
-st.write(concat_df)
-
+if st.button("Update Config")==False:
+    st.stop()
 
 st.markdown('## Data Exploration')
 
@@ -93,7 +130,7 @@ for i in range(df.shape[0]):
     logs = False
     edgecase = True
     pnl = []
-    pnl,logs_report = pair_strategy(instru1, instru2, stop_loss/100, target/100, logs, edgecase)
+    pnl,logs_report = pair_strategy(concat_df,instru1, instru2, stop_loss/100, target/100, logs, edgecase,lower_rsi=low_rsi,higher_rsi=high_rsi)
     data = calculate_pnl_report(instru1, instru2, pnl, id1, id2)  
     pnl_report.append(data)
 
@@ -101,12 +138,11 @@ pnl_report = pd.DataFrame(data=pnl_report, columns=['Instru1', 'Instru2', 'Cummu
 pnl_report = pnl_report.sort_values('Cummulative Profit', ascending=False)
 
 
-
 def display_report(id1, id2 , stoploss, target , logs, edgecase):
         logs_report = ""
         instru1 = get_instrument_data(id1)
         instru2 = get_instrument_data(id2)
-        pnl,logs_report = pair_strategy(instru1, instru2, stoploss/100, target/100, logs, edgecase)
+        pnl,logs_report = pair_strategy(concat_df,instru1, instru2, stoploss/100, target/100, logs, edgecase, lower_rsi=low_rsi,higher_rsi=high_rsi)
         get_result_graph(instru1,instru2)
     
         pdf = FPDF()
@@ -129,7 +165,7 @@ st.markdown('### Pair Strategy Ranking')
 logs = True
 edgecase = True
 
-for i in range(pnl_report.shape[0]):
+for i in range(no_of_pairs):
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.write(i+1)

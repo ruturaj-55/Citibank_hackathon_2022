@@ -1,6 +1,6 @@
 import pandas as pd
 import datetime
-from modules.data_ingestion.data_ingest import concat_df
+# from app import concat_df
 
 def get_capital_split_ratio(i, instru1, instru2):
 
@@ -151,8 +151,8 @@ def calculate_short_position(i, instru, shares, stoploss, target, logs, edgecase
     return round(gain_loss,2), print_logs
 
 
-def pair_strategy(instru1, instru2, stoploss, target, logs, edgecase):
-    logs_report = []
+def pair_strategy(concat_df, instru1, instru2, stoploss, target, logs, edgecase, lower_rsi, higher_rsi):
+    logs_report = [] 
     print_logs = []
     rows = concat_df.shape[0]
     pnl = []
@@ -161,8 +161,8 @@ def pair_strategy(instru1, instru2, stoploss, target, logs, edgecase):
       gain_loss_2 = 0
 
       # Instru1 Short and Instru2 Long Case
-      if (((instru1.iloc[i][3] >= 0.8 ) and (instru1.iloc[i][0] >= instru1.iloc[i][2])) and 
-          ((instru2.iloc[i][3] <= 0.2) and instru2.iloc[i][0] <= instru2.iloc[i][2])) :
+      if (((instru1.iloc[i][3] >= higher_rsi ) and (instru1.iloc[i][0] >= instru1.iloc[i][2])) and 
+          ((instru2.iloc[i][3] <= lower_rsi) and instru2.iloc[i][0] <= instru2.iloc[i][2])) :
 
           shares = get_capital_split_ratio(i, instru1, instru2)
 
@@ -177,8 +177,8 @@ def pair_strategy(instru1, instru2, stoploss, target, logs, edgecase):
           if logs: logs_report.append(str())
 
       # Instru2 Short and Instru1 Long Case
-      elif (((instru1.iloc[i][3] <= 0.2) and (instru1.iloc[i][0] <= instru1.iloc[i][2])) and 
-          (( instru2.iloc[i][3] >= 0.8 ) and instru2.iloc[i][0] >= instru2.iloc[i][2])) :
+      elif (((instru1.iloc[i][3] <= lower_rsi) and (instru1.iloc[i][0] <= instru1.iloc[i][2])) and 
+          (( instru2.iloc[i][3] >= higher_rsi ) and instru2.iloc[i][0] >= instru2.iloc[i][2])) :
 
           shares = get_capital_split_ratio(i, instru1, instru2)
 
@@ -193,8 +193,8 @@ def pair_strategy(instru1, instru2, stoploss, target, logs, edgecase):
           if logs: logs_report.append(str())
 
       # both long
-      elif (((instru1.iloc[i][3] <= 0.2) and (instru1.iloc[i][0] <= instru1.iloc[i][2])) and 
-        ((instru2.iloc[i][3] <= 0.2) and instru2.iloc[i][0] <= instru2.iloc[i][2])) :
+      elif (((instru1.iloc[i][3] <= lower_rsi) and (instru1.iloc[i][0] <= instru1.iloc[i][2])) and 
+        ((instru2.iloc[i][3] <= lower_rsi) and instru2.iloc[i][0] <= instru2.iloc[i][2])) :
 
           shares = get_capital_split_ratio(i, instru1, instru2)
 
@@ -209,8 +209,8 @@ def pair_strategy(instru1, instru2, stoploss, target, logs, edgecase):
           if logs: logs_report.append(str())
 
       # both short
-      elif (((instru1.iloc[i][3] >= 0.8) and (instru1.iloc[i][0] >= instru1.iloc[i][2])) and 
-        ((instru2.iloc[i][3] >= 0.8) and instru2.iloc[i][0] >= instru2.iloc[i][2])) :
+      elif (((instru1.iloc[i][3] >= higher_rsi) and (instru1.iloc[i][0] >= instru1.iloc[i][2])) and 
+        ((instru2.iloc[i][3] >= higher_rsi) and instru2.iloc[i][0] >= instru2.iloc[i][2])) :
 
           shares = get_capital_split_ratio(i, instru1, instru2)
 

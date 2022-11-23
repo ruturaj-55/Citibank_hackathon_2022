@@ -27,3 +27,21 @@ def correlation(threshold, df_comm, df_stock):
     df = pd.DataFrame(s_corr_list, columns=['Instrument1', 'Instrument2', 'Correlation'])
     return df
 
+
+def get_correlation_table(df_comm,df_stock):
+  result = get_transposed_combined_df(df_comm, df_stock)
+  corr = result.corr()
+  corr
+  threshold=0
+  thres = []
+  no_of_pairs = []
+
+  while(threshold<=1.0):
+    correlated_features = np.where(np.abs(corr) > threshold) # select ones above the abs threshold
+    correlated_features = [(corr.index[x], corr.columns[y], corr.iloc[x,y]) for x, y in zip(*correlated_features) if x != y and x < y] # avoid duplication
+    thres.append(threshold)
+    no_of_pairs.append(len(correlated_features))
+    threshold+=0.1
+
+  correlation_pairs_df = pd.DataFrame({'Threshold':thres, 'Number of pairs': no_of_pairs})
+  return correlation_pairs_df
