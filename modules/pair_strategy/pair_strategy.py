@@ -131,7 +131,7 @@ def calculate_short_position(i, instru, shares, stoploss, target, logs, edgecase
       if logs : print_logs.append(str("Bought {0} shares at Rs.{1}".format(shares, round(curr_day_price*(1 - target),2))))
 
     # Profit Loss Statement
-      ignored_gain = round((next_day_price - curr_day_price),2)
+      ignored_gain = round((curr_day_price - next_day_price),2)
       if logs : print_logs.append(str("If ignored Target then Gain : Rs.") + str(round(ignored_gain*shares,2)))
 
     # No Stoploss and No Target hit
@@ -146,7 +146,7 @@ def calculate_short_position(i, instru, shares, stoploss, target, logs, edgecase
         print_logs.append(str("Gain of Rs.{0} or {1}% on Rs.{2}".format(gain_loss, round(gain_loss*100/capital,2), capital)))
       else :
         print_logs.append(str("Loss of Rs.{0} or {1}% on Rs.{2}".format(gain_loss, round(gain_loss*100/capital,2), capital)))
-      print_logs.append(str("---------------------------------------------------"))
+      print_logs.append(str("-------------------------------------------------------------------"))
 
     return round(gain_loss,2), print_logs
 
@@ -159,6 +159,7 @@ def pair_strategy(concat_df, instru1, instru2, stoploss, target, logs, edgecase,
     for i in range(rows): 
       gain_loss_1 = 0
       gain_loss_2 = 0
+
 
       # Instru1 Short and Instru2 Long Case
       if (((instru1.iloc[i][3] >= higher_rsi ) and (instru1.iloc[i][0] >= instru1.iloc[i][2])) and 
@@ -231,7 +232,7 @@ def pair_strategy(concat_df, instru1, instru2, stoploss, target, logs, edgecase,
             logs_report.append(str("Overall Gain of Rs.{0} or {1}% on Rs.100000".format(res, round(res/1000,2))))
           else :
             logs_report.append(str("Overall Loss of Rs.{0} or {1}% on Rs.100000".format(res, round(res/1000,2))))
-          logs_report.append(str("================================================="))
+          logs_report.append(str("=========================================================================="))
 
         pnl.append([i,res])
 

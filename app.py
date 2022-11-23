@@ -141,19 +141,26 @@ def display_report(id1, id2 , stoploss, target , logs, edgecase):
         instru1 = get_instrument_data(id1)
         instru2 = get_instrument_data(id2)
         pnl,logs_report = pair_strategy(concat_df,instru1, instru2, stoploss/100, target/100, logs, edgecase, lower_rsi=low_rsi,higher_rsi=high_rsi)
-        get_result_graph(instru1,instru2)
-    
+        get_result_graph(instru1[time_period:],instru2[time_period:])    
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size = 16, style='B')
+        pdf.set_font("Times", size = 16, style='B')
         pdf.cell(200, 10, txt = "PAIR STRATEGY REPORT" ,ln = 1, align = 'C')
-        pdf.image("images/closing.png")
+
+        pdf.set_font("Times", size = 8,style='B')
+        pdf.cell(200, 10, txt = instru1.columns[0] , ln = 1, align = 'C')
+        pdf.image("images/closing1.png")
+
+        pdf.cell(200, 10, txt = instru2.columns[0] , ln = 1, align = 'C')
+        pdf.image("images/closing2.png")
+
+        pdf.cell(200, 10, txt = "STOCH RSI" , ln = 1, align = 'C')
         pdf.image("images/rsi.png")
+
         pdf.add_page()
-        pdf.set_font("Arial", size = 8)
+        pdf.set_font("Times", size = 10)
         for ind,text in enumerate(logs_report):
             pdf.multi_cell(200, 10, txt = text , align = 'L')
-
         st.download_button("Download Report", data=pdf.output(dest='S').encode('latin-1'), file_name="PnL_Report.pdf")    
         st.stop()  
            
