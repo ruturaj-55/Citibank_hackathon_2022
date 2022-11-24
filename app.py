@@ -12,21 +12,43 @@ from modules.visualization.result_graph.result_graph import get_result_graph
 
 st.title("BANKING GEEKS")
 
-st.subheader('Upload Your Files')
 
-df_comm = []
-df_stock = []
+developers = [{"Name": "Akash Kulkarni",  "github":"[github.com/Akash-213](https://github.com/Akash-213)"},
+             {"Name": "Krutika Patil",  "github":"[github.com/krutikap08](https://github.com/krutikap08)"}, 
+             {"Name": "Manasi Hatekar",  "github":"[github.com/ManasiHatekar](https://github.com/ManasiHatekar)"} ,
+             {"Name": "Ruturaj Patil",  "github":"[github.com/ruturaj-55](https://github.com/ruturaj-55)"}]
 
-uploaded_file = st.file_uploader("Upload Commodities File" , type=['csv','xlsx'])
-if uploaded_file:
-    df_comm = pd.read_csv(uploaded_file)
+st.subheader('Developers')  
+
+for i in range(len(developers)):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(i+1)
+        with col2:
+            st.write(developers[i]["Name"])
+        with col3:
+            st.write(developers[i]["github"])
+       
+
+
+df_comm =pd.read_csv("./data/Commodities.csv")
+df_stock=pd.read_csv("./data/Stocks.csv")
+
+# st.subheader('Upload Your Files')
+
+# df_comm = []
+# df_stock = []
+
+# uploaded_file = st.file_uploader("Upload Commodities File" , type=['csv','xlsx'])
+# if uploaded_file:
+#     df_comm = pd.read_csv(uploaded_file)
 
 st.subheader('Commodities Table')   
 st.write(df_comm)
 
-uploaded_file = st.file_uploader("Upload Stocks File" , type=['csv','xlsx'])
-if uploaded_file:
-    df_stock = pd.read_csv(uploaded_file)
+# uploaded_file = st.file_uploader("Upload Stocks File" , type=['csv','xlsx'])
+# if uploaded_file:
+#     df_stock = pd.read_csv(uploaded_file)
 
 st.subheader('Stocks Table')   
 st.write(df_stock)
