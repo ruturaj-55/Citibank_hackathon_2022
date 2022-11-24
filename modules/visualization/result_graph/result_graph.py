@@ -6,7 +6,7 @@ def get_result_graph(instru1, instru2):
   instru2_close = instru2.columns[0]
 
   print(instru1.columns)
-  plt.figure(figsize=(5,3)) 
+  plt.figure(figsize=(6,5)) 
   plt.ylabel("CLOSING PRICES " + instru1.columns[0])
   plt.xticks(rotation=90)
   sns.lineplot(x=instru1.index, y=instru1[instru1.columns[0]], label= "Closing Price")
@@ -15,7 +15,7 @@ def get_result_graph(instru1, instru2):
   plt.savefig('images/closing1.png',bbox_inches = 'tight')
   plt.show()
 
-  plt.figure(figsize=(5,3)) 
+  plt.figure(figsize=(6,5)) 
   plt.ylabel("CLOSING PRICES " + instru2.columns[0])
   plt.xticks(rotation=90)
   sns.lineplot(x=instru2.index, y=instru2[instru2.columns[0]], label= "Closing Price")
@@ -24,7 +24,7 @@ def get_result_graph(instru1, instru2):
   plt.savefig('images/closing2.png',bbox_inches = 'tight')
   plt.show()  
 
-  plt.figure(figsize=(5,3)) 
+  plt.figure(figsize=(6,5)) 
   plt.ylabel("STOCH RSI")
   plt.xticks(rotation=90)
   sns.lineplot(x=instru1.index, y=instru1[instru1.columns[3]], label= instru1_close + " STOCH RSI")

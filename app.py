@@ -31,26 +31,31 @@ if uploaded_file:
 st.subheader('Stocks Table')   
 st.write(df_stock)
 
+
 #Changing the format of the date
-df_comm['DATE'] = pd.to_datetime(df_comm['DATE'], format='%d-%b-%y')
-df_stock['DATE'] = pd.to_datetime(df_stock['DATE'], format='%d-%b-%y')
+if len(df_comm) !=0 and len(df_stock)!=0 :
+    df_comm['DATE'] = pd.to_datetime(df_comm['DATE'], format='%d-%b-%y')
+    df_stock['DATE'] = pd.to_datetime(df_stock['DATE'], format='%d-%b-%y')
 
-#Transforming the data into required format
-df_comm=df_comm.pivot(index='Symbol', columns='DATE', values='CLOSE')
-df_stock=df_stock.pivot(index='Symbol', columns='DATE', values='CLOSE')
+    #Transforming the data into required format
 
-#Removing the Holidays from the Commodity CSV
-df_comm.columns.difference(df_stock.columns).tolist()
-df_comm=df_comm.drop(df_comm.columns.difference(df_stock.columns).tolist(),axis=1)
+    df_comm=df_comm.pivot(index='Symbol', columns='DATE', values='CLOSE')
+    df_stock=df_stock.pivot(index='Symbol', columns='DATE', values='CLOSE')
 
-#Combining both the datasets
-concat_frames = [df_comm, df_stock]
-concat_df = pd.concat(concat_frames)
+    #Removing the Holidays from the Commodity CSV
+    df_comm.columns.difference(df_stock.columns).tolist()
+    df_comm=df_comm.drop(df_comm.columns.difference(df_stock.columns).tolist(),axis=1)
 
-#Filling any possible null values
-concat_df_t = concat_df.transpose()
-concat_df_t.fillna(concat_df_t.interpolate(), axis=0, inplace=True)
-concat_df = concat_df_t.transpose()
+    #Combining both the datasets
+    concat_frames = [df_comm, df_stock]
+    concat_df = pd.concat(concat_frames)
+
+    #Filling any possible null values
+    concat_df_t = concat_df.transpose()
+    concat_df_t.fillna(concat_df_t.interpolate(), axis=0, inplace=True)
+    concat_df = concat_df_t.transpose()
+else:
+    st.stop()
 
 st.subheader('Stocks and Commodities Data')
 st.write(concat_df)
@@ -85,17 +90,19 @@ heatmap(concat_df=concat_df)
 
 
 def get_master_dataframe(time_period):
-    st.spinner("Loading Master Dataframe..")
-    master = concat_df.columns
-    master = pd.DataFrame(master).set_index("DATE")
-    for i in range(concat_df.shape[0]):
-        master[concat_df.index[i]] = concat_df.iloc[i]    
-        master["MVA_"+concat_df.index[i]] = get_simple_moving_avg(concat_df,i,time_period)
-        master["EMVA_"+concat_df.index[i]] =  get_exp_moving_avg(concat_df,i,time_period)
-        master["RSI_"+concat_df.index[i]] = getStochRSI(concat_df,i,time_period)
-    return master
+    with st.spinner("Loading Master Dataframe.."):
+        master = concat_df.columns
+        master = pd.DataFrame(master).set_index("DATE")
+        for i in range(concat_df.shape[0]):
+            master[concat_df.index[i]] = concat_df.iloc[i]    
+            master["MVA_"+concat_df.index[i]] = get_simple_moving_avg(concat_df,i,time_period)
+            master["EMVA_"+concat_df.index[i]] =  get_exp_moving_avg(concat_df,i,time_period)
+            master["RSI_"+concat_df.index[i]] = getStochRSI(concat_df,i,time_period)
+        st.success("Done")
+        return master
 
 master_df = get_master_dataframe(time_period=time_period)
+
 
 
 def get_instrument_data(id):
@@ -117,23 +124,26 @@ def calculate_pnl_report(instru1, instru2, pnl, id1, id2):
 df = correlation(0.73, df_comm, df_stock)
 modified_df = concat_df.reset_index()
 pnl_report = []
-for i in range(df.shape[0]):
+with st.spinner("Generating PnL Reports..."):
+    for i in range(df.shape[0]):
 
-    id1 = modified_df[(modified_df["Symbol"]==df["Instrument1"][i])].index[0]
-    id2 = modified_df[(modified_df["Symbol"]==df["Instrument2"][i])].index[0]
-    
-    instru1 = get_instrument_data(id1)
-    instru2 = get_instrument_data(id2)
-    logs_report = ""
-    logs = False
-    edgecase = True
-    pnl = []
-    pnl,logs_report = pair_strategy(concat_df,instru1, instru2, stop_loss/100, target/100, logs, edgecase,lower_rsi=low_rsi,higher_rsi=high_rsi)
-    data = calculate_pnl_report(instru1, instru2, pnl, id1, id2)  
-    pnl_report.append(data)
+        id1 = modified_df[(modified_df["Symbol"]==df["Instrument1"][i])].index[0]
+        id2 = modified_df[(modified_df["Symbol"]==df["Instrument2"][i])].index[0]
+        
+        instru1 = get_instrument_data(id1)
+        instru2 = get_instrument_data(id2)
+        logs_report = ""
+        logs = False
+        edgecase = True
+        pnl = []
+        pnl,logs_report = pair_strategy(concat_df,instru1, instru2, stop_loss/100, target/100, logs, edgecase,lower_rsi=low_rsi,higher_rsi=high_rsi)
+        data = calculate_pnl_report(instru1, instru2, pnl, id1, id2)  
+        pnl_report.append(data)
 
-pnl_report = pd.DataFrame(data=pnl_report, columns=['Instru1', 'Instru2', 'Cummulative Profit', 'Instru Id1', 'Instru Id2'])
-pnl_report = pnl_report.sort_values('Cummulative Profit', ascending=False)
+    pnl_report = pd.DataFrame(data=pnl_report, columns=['Instru1', 'Instru2', 'Cummulative Profit', 'Instru Id1', 'Instru Id2'])
+    pnl_report = pnl_report.sort_values('Cummulative Profit', ascending=False)
+
+    st.success("Done")
 
 
 def display_report(id1, id2 , stoploss, target , logs, edgecase):
@@ -144,20 +154,33 @@ def display_report(id1, id2 , stoploss, target , logs, edgecase):
         get_result_graph(instru1[time_period:],instru2[time_period:])    
         pdf = FPDF()
         pdf.add_page()
+        pdf.set_font("Times", size = 20, style='B')
+        pdf.cell(200, 10, txt = "BANKING GEEKS" ,ln = 1, align = 'C')
+        pdf.ln(10)
+
         pdf.set_font("Times", size = 16, style='B')
         pdf.cell(200, 10, txt = "PAIR STRATEGY REPORT" ,ln = 1, align = 'C')
+        pdf.ln(10)
 
-        pdf.set_font("Times", size = 8,style='B')
-        pdf.cell(200, 10, txt = instru1.columns[0] , ln = 1, align = 'C')
+        pdf.set_font("Times", size = 12,style='B')
+        pdf.cell(200, 10, txt = instru1.columns[0] , ln = 1, align = 'L')
+        pdf.ln(10)
         pdf.image("images/closing1.png")
 
-        pdf.cell(200, 10, txt = instru2.columns[0] , ln = 1, align = 'C')
+        pdf.add_page()
+        pdf.cell(200, 10, txt = instru2.columns[0] , ln = 1, align = 'L')
+        pdf.ln(10)
         pdf.image("images/closing2.png")
 
-        pdf.cell(200, 10, txt = "STOCH RSI" , ln = 1, align = 'C')
+        pdf.add_page()
+        pdf.cell(200, 10, txt = "STOCH RSI" , ln = 1, align = 'L')
+        pdf.ln(10)
         pdf.image("images/rsi.png")
 
         pdf.add_page()
+        pdf.set_font("Times", size = 16, style='B')
+        pdf.cell(200, 10, txt = "DETAILED REPORT" ,ln = 1, align = 'C')
+        pdf.ln(10)
         pdf.set_font("Times", size = 10)
         for ind,text in enumerate(logs_report):
             pdf.multi_cell(200, 10, txt = text , align = 'L')
@@ -171,17 +194,18 @@ st.markdown("")
 logs = True
 edgecase = True
 
-for i in range(no_of_pairs):
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.write(i+1)
-    with col2:
-        st.write(pnl_report.iloc[i][0])
-    with col3:
-        st.write(pnl_report.iloc[i][1])
-    with col4:
-        st.write(pnl_report.iloc[i][2])
-    with col5:
-        (st.button("Generate Report",key="_btn"+str(i) , on_click = display_report , args=(pnl_report.iloc[i][3],pnl_report.iloc[i][4], stop_loss, target, logs, edgecase))) 
+with st.spinner("Generating Ranks....."):
+    for i in range(no_of_pairs):
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.write(i+1)
+        with col2:
+            st.write(pnl_report.iloc[i][0])
+        with col3:
+            st.write(pnl_report.iloc[i][1])
+        with col4:
+            st.write(pnl_report.iloc[i][2])
+        with col5:
+            (st.button("Generate Report",key="_btn"+str(i) , on_click = display_report , args=(pnl_report.iloc[i][3],pnl_report.iloc[i][4], stop_loss, target, logs, edgecase))) 
 
-    
+        
